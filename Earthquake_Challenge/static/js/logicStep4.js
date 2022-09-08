@@ -41,62 +41,28 @@ let baseMaps = {
     Satellite: satelliteStreets,
 };
 
+// Create the earthquake layer for our map.
+let earthquakes = new L.layerGroup();
+
 // Another technique to create a map object
 // Create the map object with center, zoom level and default layer.
 let map = L.map('mapid', {
     center: [30, 30],
     zoom: 2,
-    layers: [streets]
+    layers: [streets, earthquakes]
 });
 
+// We define an object that contains the overlays.
+// This overlay will be visible all the time.
+let overlays = {
+    Earthquakes: earthquakes
+};
+
 // Pass our map layers into our layers control and add the layers control to the map.
-L.control.layers(baseMaps).addTo(map);
-
-// Then we add our 'graymap' tile layer to the map.
-dark.addTo(map);
-
-//  Add a circle marker to the map for Los Angeles, California.
-// let marker = L.circleMarker([34.0522, -118.2437]).addTo(map);
-
-// Add GeoJSON data.
-// Add GeoJSON data.
-// let sanFranAirport =
-// {
-//     "type": "FeatureCollection", "features": [{
-//         "type": "Feature",
-//         "properties": {
-//             "id": "3469",
-//             "name": "San Francisco International Airport",
-//             "city": "San Francisco",
-//             "country": "United States",
-//             "faa": "SFO",
-//             "icao": "KSFO",
-//             "alt": "13",
-//             "tz-offset": "-8",
-//             "dst": "A",
-//             "tz": "America/Los_Angeles"
-//         },
-//         "geometry": {
-//             "type": "Point",
-//             "coordinates": [-122.375, 37.61899948120117]
-//         }
-//     }
-//     ]
-// };
-
-// Grabbing our GeoJSON data.
-// L.geoJson(sanFranAirport, {
-//     pointToLayer: function(feature, latlng) {
-//       return L.circleMarker(latlng)
-//       .bindPopup("<h2>" + feature.properties.city + "</h2>")
-//      }
-// }).addTo(map);
-
-// L.geoJSON(sanFranAirport, {
-//     onEachFeature: function (feature, layer) {
-//         layer.bindPopup("<h4>" + feature.properties.city + "</h4>" + "<hr>" + "<br>" + feature.properties.faa);
-//     }
-// }).addTo(map);
+L.control.layers(baseMaps, overlays, {
+    collapsed: false
+}
+).addTo(map);
 
 // Retrieve the earthquake GeoJSON data from the USGS site.
 let earthquakeData = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
@@ -166,9 +132,9 @@ d3.json(earthquakeData).then(function (data) {
         onEachFeature: function (feature, layer) {
             layer.bindPopup("Magnitude: " + feature.properties.mag + "<br>Location: " + feature.properties.place);
         }
-    }).addTo(map);
+    }).addTo(earthquakes);
 
-    
+
     // no data beyond this point
 });
 
