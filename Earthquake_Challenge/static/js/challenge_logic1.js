@@ -37,25 +37,21 @@ let dark = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/dark-v10/tiles/{
 // Create a base layer that holds both maps.
 let baseMaps = {
     Street: streets,
-    Satellite: satelliteStreets,
     Dark: dark,
+    Satellite: satelliteStreets,
 };
 
 // Create the earthquake layer for our map.
 let earthquakes = new L.layerGroup();
 
-// D-1 -1. Add a 2nd layer group for the tectonic plate data.
+// D-1. Step1. Add a 2nd layer group for the tectonic plate data.
 let tectonicPlates = new L.LayerGroup();
-
-// D2 - 1. Add a 3rd layer group for the major earthquake data.
-let majorEarthquakes = new L.LayerGroup();
 
 // We define an object that contains the overlays.
 // This overlay will be visible all the time.
 let overlays = {
     Earthquakes: earthquakes,
     "Technonic Plates": tectonicPlates,
-    "Major Earthquakes": majorEarthquakes,
 };
 
 
@@ -64,7 +60,7 @@ let overlays = {
 let map = L.map('mapid', {
     center: [30, 30],
     zoom: 2,
-    layers: [streets, earthquakes, majorEarthquakes]
+    layers: [streets, earthquakes]
 });
 
 // Pass our map layers into our layers control and add the layers control to the map.
@@ -142,73 +138,6 @@ d3.json(earthquakeData).then(function (data) {
             layer.bindPopup("Magnitude: " + feature.properties.mag + "<br>Location: " + feature.properties.place);
         }
     }).addTo(earthquakes);
-
-    // ########### adding D3 code ############
-    // https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_week.geojson
-
-    // 3. Retrieve the major earthquake GeoJSON data >4.5 mag for the week.
-    d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_week.geojson").then(function (majordata) {
-        console.log(majordata);
-
-        // 4. Use the same style as the earthquake data.
-        function styleInfo(feature) {
-            return {
-                opacity: 1,
-                fillOpacity: 1,
-                fillColor: getColor(feature.properties.mag),
-                color: "#000000",
-                radius: getRadius(feature.properties.mag),
-                stroke: true,
-                weight: 0.5
-            };
-        }
-
-        // 5. Change the color function to use three colors for the major earthquakes based on the magnitude of the earthquake.
-        function getColor(magnitude) {
-            if (magnitude > 6) {
-                return "#a10a0a";
-            }
-            if (magnitude > 5) {
-                return "#ea2c2c";
-            }
-            if (magnitude <= 5) {
-                return "#ea822c";
-            }
-        }
-
-
-        // 6. Use the function that determines the radius of the earthquake marker based on its magnitude.
-        function getRadius(magnitude) {
-            if (magnitude === 0) {
-                return 1;
-            }
-            return magnitude * 4;
-        }
-
-        // 7. Creating a GeoJSON layer with the retrieved data that adds a circle to the map 
-        // sets the style of the circle, and displays the magnitude and location of the earthquake
-        //  after the marker has been created and styled.
-        L.geoJson(majordata, {
-
-            // We turn each feature into a circleMarker on the map.
-
-            pointToLayer: function (feature, latlng) {
-                console.log(data);
-                return L.circleMarker(latlng);
-            },
-            // We set the style for each circleMarker using our styleInfo function.
-            style: styleInfo,
-
-            // We create a popup for each circleMarker to display the magnitude and
-            //  location of the earthquake after the marker has been created and styled.
-            onEachFeature: function (feature, layer) {
-                layer.bindPopup("Magnitude: " + feature.properties.mag + "<br>Location: " + feature.properties.place);
-            }
-
-            // 8. Add the major earthquakes layer to the map.
-        }).addTo(majorEarthquakes);
-        // 9. Close the braces and parentheses for the major earthquake data.
-    });
 
 
     // Create a legend control object.
